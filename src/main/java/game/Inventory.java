@@ -5,12 +5,12 @@ public class Inventory {
 	private Item[] items;
 
 	/**
-	 * Returns the array of items stored in the inventory.
+	 * Returns a copy of the array of items stored in the inventory.
 	 * 
-	 * @return The array of items currently in the inventory.
+	 * @return A copy of the array of items currently in the inventory.
 	 */
 	public Item[] getItems() {
-		return items;
+		return items.clone();
 	}
 
 	/**

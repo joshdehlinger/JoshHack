@@ -95,9 +95,7 @@ public class PathFinder {
 		reParent(neighbor, closest);
 		double reparentCost = costToGetTo(neighbor);
 		
-		if (reparentCost < currentCost)
-			open.remove(neighbor);
-		else
+		if (reparentCost >= currentCost)
 			reParent(neighbor, originalParent);
 	}
 

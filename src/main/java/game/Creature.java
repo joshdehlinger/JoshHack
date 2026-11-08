@@ -2,6 +2,7 @@ package game;
 
 import java.awt.Color;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class Creature {
@@ -267,7 +268,7 @@ public class Creature {
 	 * @return A list of Effects affecting the Creature.
 	 */
 	public List<Effect> effects() {
-		return effects;
+		return Collections.unmodifiableList(effects);
 	}
 
 	private int maxMana;

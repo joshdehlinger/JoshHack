@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.awt.Color;
 
@@ -56,5 +57,10 @@ public class CreatureTest {
         assertEquals(0, creature.hp());
         assertEquals("Killed in combat", creature.causeOfDeath());
 
+    }
+
+    @Test
+    void effectsListCannotBeModifiedByCallers() {
+        assertThrows(UnsupportedOperationException.class, () -> creature.effects().add(new Effect(1)));
     }
 }

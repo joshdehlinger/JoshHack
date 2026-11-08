@@ -98,4 +98,16 @@ public class InventoryTest {
         assertSame(replacement, inventory.get(0));
         assertSame(second, inventory.get(1));
     }
+
+    @Test
+    void getItemsReturnsArrayCopy() {
+        Inventory inventory = new Inventory(1);
+        Item item = makeItem("Sword");
+        inventory.add(item);
+
+        Item[] items = inventory.getItems();
+        items[0] = null;
+
+        assertSame(item, inventory.get(0));
+    }
 }
