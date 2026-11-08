@@ -55,6 +55,7 @@
                     <classpathScope>compile</classpathScope>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.pitest</groupId>
                 <artifactId>pitest-maven</artifactId>
@@ -80,6 +81,28 @@
                     <mutationThreshold>0</mutationThreshold>
                     </configuration>
             </plugin>
+
+            <plugin>
+                <groupId>com.github.spotbugs</groupId>
+                <artifactId>spotbugs-maven-plugin</artifactId>
+                <version>4.8.3.1</version>
+
+                <configuration>
+                    <effort>default</effort>
+                    <threshold>medium</threshold>
+                    <failOnError>false</failOnError>
+                    <excludeFilterFile>spotbugs-exclude.xml</excludeFilterFile>
+                </configuration>
+
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 
