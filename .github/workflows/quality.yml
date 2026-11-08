@@ -38,9 +38,80 @@ jobs:
         run: ./mvnw spotbugs:check
         continue-on-error: true
 
-      - name: Upload SpotBugs report
+      - name: Upload SpotBugs XML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: spotbugs-report
           path: target/spotbugsXml.xml
+
+      - name: Convert SpotBugs XML to SARIF format
+        if: always()
+        run: |
+          # Download the SpotBugs SARIF converter
+          wget -q -O /tmp/fb-contrib.jar https://repo1.maven.org/maven2/com/github/spotbugs/spotbugs/4.8.3/spotbugs-4.8.3.jar
+          # Use SpotBugs built-in SARIF conversion via Java
+          java -cp /tmp/fb-contrib.jar com.github.spotbugs.sarif.SarifOutputGenerator target/spotbugsXml.xml target/spotbugs.sarif || \
+          # Fallback: Create a minimal SARIF from XML with jq
+          python3 << 'PYTHON'
+          import xml.etree.ElementTree as ET
+          import json
+          
+          # Parse SpotBugs XML
+          tree = ET.parse('target/spotbugsXml.xml')
+          root = tree.getroot()
+          
+          results = []
+          for bug in root.findall('.//BugInstance'):
+              bug_type = bug.get('type', 'Unknown')
+              severity = bug.get('abbrev', 'M')
+              message = bug.findtext('ShortMessage', 'No description available')
+              
+              source_line = bug.find('.//SourceLine')
+              if source_line is not None:
+                  file_path = source_line.get('sourcefile', 'Unknown')
+                  line_num = int(source_line.get('start', '1'))
+              else:
+                  file_path = 'Unknown'
+                  line_num = 1
+              
+              results.append({
+                  "ruleId": bug_type,
+                  "message": {"text": message},
+                  "locations": [{
+                      "physicalLocation": {
+                          "artifactLocation": {"uri": file_path},
+                          "region": {"startLine": line_num}
+                      }
+                  }],
+                  "level": "warning"
+              })
+          
+          # Create SARIF document
+          sarif = {
+              "version": "2.1.0",
+              "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+              "runs": [{
+                  "tool": {
+                      "driver": {
+                          "name": "SpotBugs",
+                          "version": "4.8.3"
+                      }
+                  },
+                  "results": results
+              }]
+          }
+          
+          with open('target/spotbugs.sarif', 'w') as f:
+              json.dump(sarif, f, indent=2)
+          
+          print("SARIF report generated successfully")
+          PYTHON
+
+      - name: Upload SpotBugs SARIF report to GitHub Code Scanning
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: target/spotbugs.sarif
+          category: spotbugs
+          wait-for-processing: true
