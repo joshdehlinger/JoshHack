@@ -21,6 +21,11 @@ public class CombatRulesTest {
     }
 
     @Test
+    void testDamageBelowZeroHpClampsToZero() {
+        assertEquals(0, CombatRules.calculateNewHp(10, 100, -15));
+    }
+
+    @Test
     void testIsDead() {
         assertTrue(CombatRules.isDead(0));
         assertTrue(CombatRules.isDead(-5));
